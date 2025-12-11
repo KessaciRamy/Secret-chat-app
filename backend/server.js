@@ -1,14 +1,20 @@
-const express = require("express");
-const pool = require("./db");
-const cors = require("cors");
+import http from 'http';
+import { Server } from 'socket.io';
+import app from './app.js';
+import chatSocket from './sockets/chat.socket.js';
 
-const app = express();
-app.use(cors());
-app.use(express.json());
+const server = http.createServer(app);
 
-app.get("/test", async (req, res) => {
-  const result = await pool.query("SELECT NOW()");
-  res.json(result.rows);
+const io = new Server(server, {
+  cors: {
+    origin: '*'
+  }
 });
 
-app.listen(3000, () => console.log("Backend running on port 3000"));
+
+chatSocket(io);
+
+const PORT = 3000;
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+} )

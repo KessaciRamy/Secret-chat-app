@@ -1,3 +1,11 @@
 #env environnement
 frontend/.env
 backend/.env
+
+#node modules
+frontend/node_modules
+backend/node_modules
+/node_modules
+
+#expo environnement
+frontend/.expo
