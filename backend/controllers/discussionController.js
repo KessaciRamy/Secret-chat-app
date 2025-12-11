@@ -9,7 +9,7 @@ export async function createDiscussion(req, res) {
     const id = uuidv4();
     try {
         await pool.query(
-            'INSERT INTO discussions(id, theme, subject, max_users) VALUES ($1, $2, $3, $4, $5)',[id, theme || 'General', subject || null, max_users || 10]
+            'INSERT INTO discussions(id, theme, subject, max_users) VALUES ($1, $2, $3, $4)',[id, theme || 'General', subject || null, max_users || 10]
         );
     //creer la discussion dans le front aussi
      discussionMemoryService.createRoom(id);
