@@ -20,14 +20,16 @@ export default function chatSocket(io){
                 if (!discussionMemoryService.getRoom(roomId)) discussionMemoryService.createRoom(roomId);
 
                 const room = discussionMemoryService.getRoom(roomId);
+                //voit si le max_users est atteint
                 if (Object.keys(room.users).length >= db.rows[0].max_users)
                     return ack?.({ error: 'Room full'});
 
                 const tempId = uuidv4();
+                const pseudo = genPseudo();
                 const isFirstUser = Object.keys(room.users).length === 0;
                 //on ajoute l utilisateur dans la discussion
                 discussionMemoryService.addUserToRoom(roomId, tempId, {
-                    pseudo: genPseudo(),
+                    pseudo,
                     socketId: socket.id,
                     isAdmin: isFirstUser // createur de la discussion = admin
                 });
@@ -39,7 +41,8 @@ export default function chatSocket(io){
                 ack?.({
                     tempId,
                     messages: room.messages,
-                    users: Object.values(room.users)
+                    // ou bien users: Object.values(room.users)
+                    users: discussionMemoryService.getMembers(roomId)
                 });
 
                 socket.to(roomId).emit('user_joined', {
@@ -66,14 +69,16 @@ export default function chatSocket(io){
                 text,
                 createdAt: Date.now()
             };
-
-            room.messages.push(msg);
+            // ajoute le message
+            discussionMemoryService.addMessage(roomId, msg);
             io.to(roomId).emit('new_message', msg);
         });
+
         //si l utilisateur sort de la conversation
         socket.on('disconnect', async () => {
             const { roomId, tempId } = socket;
             if(!roomId || !tempId) return;
+            const room = discussionMemoryService.getRoom(roomId);
             const admin = room.users[tempId]?.isAdmin;
             //supprimer l utilisateur
             discussionMemoryService.removeUserFromRoom(roomId, tempId);

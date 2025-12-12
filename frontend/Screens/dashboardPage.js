@@ -1,7 +1,23 @@
-import React from "react";
-import { View, Text, Button, StyleSheet, ScrollView } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, Button, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
+import { fetchDiscussions } from "../api/discussions";
 
 export function DashboardScreen({ navigation }) {
+  const [rooms, setRooms] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    loadRooms();
+  },[]);
+
+  async function loadRooms() {
+    setLoading(true);
+    const data =  await fetchDiscussions();
+    setRooms(data);
+    console.log(rooms)
+    setLoading(false);
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -13,23 +29,30 @@ export function DashboardScreen({ navigation }) {
         />
       </View>
 
-      <ScrollView style={{ width: "100%", marginTop: 20 }}>
-        {/* Exemple de salons */}
-        <View style={styles.room}>
-          <Text>Discussion : Programmation</Text>
-          <Button title="Rejoindre" onPress={() => {}} />
-        </View>
+      {loading ? (
+        <ActivityIndicator size="large" style={{ marginTop: 40 }} />
+      ) : (
+        <ScrollView style={{ width: "100%", marginTop: 20 }}>
+          {rooms.map((room) => (
+            <View key={room.id} style={styles.room}>
+              <View>
+                <Text style={{ fontWeight: "bold" }}>{room.theme}</Text>
+                <Text style={{ color: "#555" }}>
+                  {room.subject || "Aucun sujet"}
+                </Text>
+                <Text style={{ color: "#555" }}>
+                  {room.max_users || "10"}
+                </Text>
+              </View>
 
-        <View style={styles.room}>
-          <Text>Discussion : Sport</Text>
-          <Button title="Rejoindre" onPress={() => {}} />
-        </View>
-
-        <View style={styles.room}>
-          <Text>Discussion : Jeux vidéo</Text>
-          <Button title="Rejoindre" onPress={() => {}} />
-        </View>
-      </ScrollView>
+              <Button
+                title="Rejoindre"
+                onPress={() => navigation.navigate("ChatRoom", { roomId: room.id })}
+              />
+            </View>
+          ))}
+        </ScrollView>
+      )}
     </View>
   );
 }

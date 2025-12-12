@@ -9,3 +9,6 @@ backend/node_modules
 
 #expo environnement
 frontend/.expo
+
+#put ur ip adress here
+frontend/config.js
