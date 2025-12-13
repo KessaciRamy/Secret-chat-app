@@ -1,22 +1,31 @@
-import React from "react";
-import { View, Text, Button, StyleSheet } from "react-native";
+import React, { useEffect } from "react";
+import { View, Text, ActivityIndicator } from "react-native";
+import { socket } from "../utils/socket";
 
-export function WaitingRoomScreen( {navigation} ) {
+export function WaitingRoomScreen( {navigation, route} ) {
+  const { roomId } = route.params;
+
+  useEffect(() => {
+    socket.emit('join_room', { roomId }, (res) => {
+      if(res?.error){
+        alert(res.error);
+        navigation.replace('Dashboard');
+        return;
+      };
+      navigation.replace('Chat', {
+        roomId,
+        tempId: res.tempId,
+        users: res.users,
+        messages: res.messages,
+        isAdmin:res.users.find(u => u.tempId === res.tempId)?.isAdmin
+      });
+    });
+  }, [roomId]);
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Salon créé !</Text>
-      <Text>En attente que les utilisateurs rejoignent…</Text>
-
-      <View style={{ height: 25 }} />
-
-      <Button title="Commencer sans attendre ?" onPress={() => {}} />
-
-      <Button title="Annuler" onPress={() => navigation.replace('CreateForm')} />
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <ActivityIndicator size="large" />
+      <Text>Connexion au salon...</Text>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", alignItems: "center" },
-  title: { fontSize: 22, marginBottom: 10 },
-});

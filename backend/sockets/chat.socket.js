@@ -40,6 +40,7 @@ export default function chatSocket(io){
 
                 ack?.({
                     tempId,
+                    started: room.started,
                     messages: room.messages,
                     // ou bien users: Object.values(room.users)
                     users: discussionMemoryService.getMembers(roomId)
@@ -49,12 +50,32 @@ export default function chatSocket(io){
                     tempId,
                     pseudo
                 });
+
+                //notifier que le user a joint la conversation
+                socket.to(roomId).emit('system_message', {
+                    id: uuidv4(),
+                    text: `${pseudo} a rejoint la discussion`,
+                    createdAt: Date.now()
+                });
             } catch(err){
                 console.error(err);
                 ack?.({ error: 'Server error'});
             }
         });
+        //pour commencer une discussion
+        socket.on('start_discussion', () => {
+            const { roomId, tempId } = socket;
+            if(!roomId || !tempId) return;
 
+            const room = discussionMemoryService.getRoom(roomId);
+            if(!room) return;
+
+            if(!room.users[tempId]?.isAdmin) return;
+
+            room.started = true;
+
+            io.to(roomId).emit('discussion_started');
+        })
         //Pour les messages
         socket.on('send_message', ({ text }) => {
             const { roomId, tempId } = socket;
@@ -62,10 +83,12 @@ export default function chatSocket(io){
 
             const room = discussionMemoryService.getRoom(roomId);
             if(!room) return;
+            const user = room.users[tempId];
 
             const msg = {
                 id: uuidv4(),
                 userId: tempId,
+                pseudo: user.pseudo,
                 text,
                 createdAt: Date.now()
             };
@@ -79,17 +102,25 @@ export default function chatSocket(io){
             const { roomId, tempId } = socket;
             if(!roomId || !tempId) return;
             const room = discussionMemoryService.getRoom(roomId);
+            if(!room) return;
             const admin = room.users[tempId]?.isAdmin;
             //supprimer l utilisateur
             discussionMemoryService.removeUserFromRoom(roomId, tempId);
-            
             socket.to(roomId).emit('user_left', { tempId });
+
             if(Object.keys(room.users).length === 0 || admin) {
                 io.to(roomId).emit('room_closed');
+                //force all sockets to leave and make sure no users are in there hihi
+                /*const sockets = await io.in(roomId).fetchSockets();
+                sockets.forEach(s => {
+                    s.leave(roomId);
+                    s.disconnect(true);
+                });*/
                 await pool.query(
                     'DELETE FROM discussions WHERE id = $1',[roomId]
                 );
                 discussionMemoryService.deleteRoom(roomId);
+                return;
             }
         });
     });

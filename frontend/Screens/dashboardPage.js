@@ -14,7 +14,8 @@ export function DashboardScreen({ navigation }) {
     setLoading(true);
     const data =  await fetchDiscussions();
     setRooms(data);
-    console.log(rooms)
+    console.log(data);
+    console.log(rooms);
     setLoading(false);
   }
 
@@ -47,7 +48,7 @@ export function DashboardScreen({ navigation }) {
 
               <Button
                 title="Rejoindre"
-                onPress={() => navigation.navigate("ChatRoom", { roomId: room.id })}
+                onPress={() => navigation.navigate("WaitingRoom", { roomId: room.id })}
               />
             </View>
           ))}

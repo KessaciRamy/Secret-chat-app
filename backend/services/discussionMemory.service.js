@@ -17,7 +17,8 @@ rooms.set(roomId, {
     createdAt: number
   }
   ],
-  createdAt: number
+  createdAt: number,
+  started: false
 })
 */
 
