@@ -24,7 +24,7 @@ export async function createDiscussion(req, res) {
 //fonction pour afficher la liste des discussions
 export async function listDiscussions(req, res) {
     try{
-        const result = await pool.query('SELECT id, theme, subject, max_users FROM discussions');
+        const result = await pool.query('SELECT id, theme, subject, max_users FROM discussions WHERE open = true');
         return res.json({ rooms: result.rows });
     } catch(err) {
         console.error(err);

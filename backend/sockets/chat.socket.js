@@ -11,7 +11,7 @@ export default function chatSocket(io){
         socket.on('join_room', async ({ roomId }, ack) => {
             try{
                 const db = await pool.query(
-                    'SELECT max_users FROM discussions WHERE id = $1',[roomId]
+                    'SELECT max_users, open FROM discussions WHERE id = $1',[roomId]
                 );
                 if (db.rowCount === 0)
                     return ack?.({ error: 'Room not found'});
@@ -23,6 +23,10 @@ export default function chatSocket(io){
                 //voit si le max_users est atteint
                 if (Object.keys(room.users).length >= db.rows[0].max_users)
                     return ack?.({ error: 'Room full'});
+
+                //pour check si la discussion a deja ete commence si un user essaie de rentrer apres qu elle a commence
+                if(db.rows[0].open === false)
+                    return ack?.({ error: 'Discussion deja commencé'});
 
                 const tempId = uuidv4();
                 const pseudo = genPseudo();
@@ -63,7 +67,8 @@ export default function chatSocket(io){
             }
         });
         //pour commencer une discussion
-        socket.on('start_discussion', () => {
+        socket.on('start_discussion', async () => {
+            try{
             const { roomId, tempId } = socket;
             if(!roomId || !tempId) return;
 
@@ -75,6 +80,15 @@ export default function chatSocket(io){
             room.started = true;
 
             io.to(roomId).emit('discussion_started');
+            //fermer la discussions pour que personne ne puissent rentrer 
+            await pool.query(
+                'UPDATE discussions SET open = false WHERE id = $1',[roomId]
+            );
+            //test
+            console.log('discussion closed yay');
+        } catch(err){
+            console.error('Failed to start the discussion', err);
+        }
         })
         //Pour les messages
         socket.on('send_message', ({ text }) => {

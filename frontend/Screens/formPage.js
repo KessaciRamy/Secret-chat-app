@@ -6,9 +6,11 @@ export function FormScreen({ navigation }) {
   const [theme, setTheme] = useState('');
   const [subject, setSubject] = useState('');
   const [maxUsers, setMaxUsers] = useState('');
+  const [submit, setSubmit] = useState(false);
 
   async function handleCreate() {
     try{
+        setSubmit(true);
         const res = await fetch(`${API_URL}/api/discussions`, {
             method: 'POST',
             headers: { 'Content-type': 'application/json'},
@@ -20,8 +22,10 @@ export function FormScreen({ navigation }) {
           return;
         }
         console.log('salon created');
+        setSubmit(false)
         navigation.replace("WaitingRoom", {roomId: data.roomId});
     } catch(err){
+        setSubmit(false);
         console.error(err);
         Alert.alert("Erreur", "Impossible de contacter le serveur.");
     }
@@ -51,8 +55,11 @@ export function FormScreen({ navigation }) {
       />
 
       <Button
-        title="Créer"
+        title={submit 
+        ?  "Creation du salon..."
+        : "Créer le salon"}
         onPress={handleCreate}
+        disabled={submit}
       />
     </View>
   );
