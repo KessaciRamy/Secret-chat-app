@@ -41,6 +41,7 @@ export default function chatSocket(io){
                 socket.join(roomId);
                 socket.tempId = tempId;
                 socket.roomId = roomId;
+                socket.pseudo = pseudo;
 
                 ack?.({
                     tempId,
@@ -113,14 +114,16 @@ export default function chatSocket(io){
 
         //si l utilisateur sort de la conversation
         socket.on('disconnect', async () => {
-            const { roomId, tempId } = socket;
+            const { roomId, tempId, pseudo } = socket;
             if(!roomId || !tempId) return;
             const room = discussionMemoryService.getRoom(roomId);
             if(!room) return;
             const admin = room.users[tempId]?.isAdmin;
+
+            
             //supprimer l utilisateur
             discussionMemoryService.removeUserFromRoom(roomId, tempId);
-            socket.to(roomId).emit('user_left', { tempId });
+            
 
             if(Object.keys(room.users).length === 0 || admin) {
                 io.to(roomId).emit('room_closed');
@@ -136,6 +139,14 @@ export default function chatSocket(io){
                 discussionMemoryService.deleteRoom(roomId);
                 return;
             }
+            //check again ceci
+            socket.to(roomId).emit('user_left', { 
+                id: uuidv4(),
+                text: `${pseudo} a quitté la discussion`}
+            );
+            console.log(
+            `[DISCONNECT] ${pseudo} (${tempId}) left room ${roomId} | admin=${admin}`
+            );
         });
     });
 }

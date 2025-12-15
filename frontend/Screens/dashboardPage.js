@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Button, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
+import { View, Text, Button, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity } from "react-native";
 import { fetchDiscussions } from "../api/discussions";
 
 export function DashboardScreen({ navigation }) {
@@ -24,32 +24,40 @@ export function DashboardScreen({ navigation }) {
       <View style={styles.header}>
         <Text style={styles.title}>Salons disponibles</Text>
 
-        <Button
-          title="Créer un salon"
+        <TouchableOpacity
+          style={styles.createButton}
           onPress={() => navigation.navigate("CreateForm")}
-        />
+        >
+          <Text style={styles.createText}>＋</Text>
+        </TouchableOpacity>
       </View>
 
       {loading ? (
-        <ActivityIndicator size="large" style={{ marginTop: 40 }} />
+        <ActivityIndicator size="large" color="#5B5FFF" style={{ marginTop: 40 }} />
       ) : (
-        <ScrollView style={{ width: "100%", marginTop: 20 }}>
+        <ScrollView showsVerticalScrollIndicator={false}>
           {rooms.map((room) => (
-            <View key={room.id} style={styles.room}>
-              <View>
-                <Text style={{ fontWeight: "bold" }}>{room.theme}</Text>
-                <Text style={{ color: "#555" }}>
+            <View key={room.id} style={styles.card}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.theme}>{room.theme}</Text>
+
+                <Text style={styles.subject}>
                   {room.subject || "Aucun sujet"}
                 </Text>
-                <Text style={{ color: "#555" }}>
-                  {room.max_users || "10"}
+
+                <Text style={styles.users}>
+                  👥 {room.max_users || 10} personnes max
                 </Text>
               </View>
 
-              <Button
-                title="Rejoindre"
-                onPress={() => navigation.navigate("WaitingRoom", { roomId: room.id })}
-              />
+              <TouchableOpacity
+                style={styles.joinButton}
+                onPress={() =>
+                  navigation.navigate("WaitingRoom", { roomId: room.id })
+                }
+              >
+                <Text style={styles.joinText}>Rejoindre</Text>
+              </TouchableOpacity>
             </View>
           ))}
         </ScrollView>
@@ -59,16 +67,79 @@ export function DashboardScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, paddingTop: 50 },
-  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  title: { fontSize: 22, fontWeight: "bold" },
-  room: {
-    padding: 15,
-    borderWidth: 1,
-    borderColor: "#aaa",
-    borderRadius: 8,
-    marginBottom: 15,
+  container: {
+    flex: 1,
+    backgroundColor: "#0F0F14",
+    padding: 20,
+    paddingTop: 55,
+  },
+
+  header: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 25,
+  },
+
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#FFFFFF",
+  },
+
+  createButton: {
+    backgroundColor: "#5B5FFF",
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  createText: {
+    color: "#FFFFFF",
+    fontSize: 24,
+    fontWeight: "bold",
+  },
+
+  card: {
+    backgroundColor: "#1A1A22",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 15,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  theme: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+
+  subject: {
+    color: "#9CA3AF",
+    fontSize: 13,
+    marginBottom: 6,
+  },
+
+  users: {
+    color: "#6B7280",
+    fontSize: 12,
+  },
+
+  joinButton: {
+    backgroundColor: "#5B5FFF",
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 20,
+    marginLeft: 10,
+  },
+
+  joinText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "600",
   },
 });

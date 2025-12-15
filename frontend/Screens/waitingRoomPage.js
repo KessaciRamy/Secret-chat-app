@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { View, Text, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import { socket } from "../utils/socket";
 
 export function WaitingRoomScreen( {navigation, route} ) {
@@ -22,10 +22,35 @@ export function WaitingRoomScreen( {navigation, route} ) {
     });
   }, [roomId]);
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <ActivityIndicator size="large" />
-      <Text>Connexion au salon...</Text>
+    <View style={styles.container}>
+      <ActivityIndicator size="large" color="#5B5FFF" />
+      <Text style={styles.title}>Connexion au salon...</Text>
+      <Text style={styles.subtitle}>Veuillez patienter</Text>
     </View>
   );
 }
 
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#0F0F14",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 30,
+  },
+
+  title: {
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontWeight: "600",
+    marginTop: 20,
+  },
+
+  subtitle: {
+    color: "#9CA3AF",
+    fontSize: 13,
+    marginTop: 8,
+    textAlign: "center",
+    maxWidth: 260,
+  },
+});

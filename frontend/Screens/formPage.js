@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
+import { View, Text, TextInput, StyleSheet, Alert, KeyboardAvoidingView, Platform, TouchableOpacity } from "react-native";
 import { API_URL } from "../config";
 export function FormScreen({ navigation }) {
 
@@ -19,6 +19,7 @@ export function FormScreen({ navigation }) {
         const data = await res.json();
         if(!res.ok) {
           Alert.alert("Erreur", data.error || "Erreur serveur");
+          setSubmit(false);
           return;
         }
         console.log('salon created');
@@ -31,48 +32,113 @@ export function FormScreen({ navigation }) {
     }
   }
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Créer un salon de discussion</Text>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <View style={styles.container}>
 
-      <TextInput 
-      placeholder="Thème de la discussion" 
-      style={styles.input}
-      value={theme}
-      onChangeText={setTheme} />
+        <Text style={styles.title}>Créer un salon</Text>
+        <Text style={styles.subtitle}>
+          Les discussions sont anonymes et temporaires
+        </Text>
 
-      <TextInput 
-      placeholder="Sujet" 
-      style={styles.input} 
-      value={subject}
-      onChangeText={setSubject}/>
+        <View style={styles.card}>
 
-      <TextInput
-        placeholder="Limite de personnes"
-        keyboardType="numeric"
-        style={styles.input}
-        value={maxUsers}
-        onChangeText={setMaxUsers}
-      />
+          <TextInput
+            placeholder="Thème de la discussion"
+            placeholderTextColor="#6B7280"
+            style={styles.input}
+            value={theme}
+            onChangeText={setTheme}
+          />
 
-      <Button
-        title={submit 
-        ?  "Creation du salon..."
-        : "Créer le salon"}
-        onPress={handleCreate}
-        disabled={submit}
-      />
-    </View>
+          <TextInput
+            placeholder="Sujet (optionnel)"
+            placeholderTextColor="#6B7280"
+            style={styles.input}
+            value={subject}
+            onChangeText={setSubject}
+          />
+
+          <TextInput
+            placeholder="Nombre maximum de participants"
+            placeholderTextColor="#6B7280"
+            keyboardType="numeric"
+            style={styles.input}
+            value={maxUsers}
+            onChangeText={setMaxUsers}
+          />
+
+          <TouchableOpacity
+            style={[styles.button, submit && styles.disabledBtn]}
+            onPress={handleCreate}
+            disabled={submit}
+          >
+            <Text style={styles.buttonText}>
+              {submit ? "Création..." : "Créer le salon"}
+            </Text>
+          </TouchableOpacity>
+
+        </View>
+
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, paddingTop: 60 },
-  title: { fontSize: 22, marginBottom: 20 },
+  container: {
+    flex: 1,
+    backgroundColor: "#0F0F14",
+    padding: 20,
+    paddingTop: 70,
+  },
+
+  title: {
+    color: "#FFFFFF",
+    fontSize: 26,
+    fontWeight: "bold",
+    marginBottom: 5,
+  },
+
+  subtitle: {
+    color: "#9CA3AF",
+    fontSize: 13,
+    marginBottom: 25,
+  },
+
+  card: {
+    backgroundColor: "#1A1A22",
+    borderRadius: 18,
+    padding: 20,
+  },
+
   input: {
-    borderWidth: 1,
-    borderColor: "#aaa",
-    padding: 10,
-    borderRadius: 6,
+    backgroundColor: "#0F0F14",
+    color: "#FFFFFF",
+    borderRadius: 12,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
     marginBottom: 15,
+    fontSize: 14,
+  },
+
+  button: {
+    backgroundColor: "#5B5FFF",
+    paddingVertical: 14,
+    borderRadius: 30,
+    alignItems: "center",
+    marginTop: 10,
+  },
+
+  buttonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+
+  disabledBtn: {
+    opacity: 0.6,
   },
 });
